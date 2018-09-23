@@ -25,12 +25,15 @@ function mapDispatachToProps(dispatch) {
   }
 }
 
-function mapStateToProps(calendar) {
+function mapStateToProps({calendar, food}) {
   return {
-    calendar: Object.keys(calendar)
-    .map((day) => ({
+    calendar: Object.keys(calendar).map((day) => ({
       day,
-      meals: {...calendar[day]}
+      meals: Object.keys(calendar).reduce((meals, meal) => {
+        meals[meal] = calendar[day][meal] ? food[calendar[day][meal]] : null
+
+        return meals
+      }, {})
     }))
   }
 }
