@@ -66,10 +66,10 @@ const initialCalendarState = {
   const food = (state = {}, action) => {
     switch(action.type) {
       case ADD_RECIPE:
-        const {newRecipe} = action 
+        const {recipe} = action 
         return {
           ...state,
-          [newRecipe.label]: newRecipe
+          [recipe.label]: recipe
         }
       default: 
         return state
