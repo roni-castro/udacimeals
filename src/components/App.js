@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { addRecipe, removeFromCalendar } from '../actions';
 import { capitalize } from '../utils/helper';
 import FoodList from './FoodList'
+import ShoppingList from './ShoppingList';
 import CalendarIcon from 'react-icons/lib/fa/calendar-plus-o';
 import ArrowRightIcon from 'react-icons/lib/fa/arrow-circle-right';
 import Loading from 'react-loading';
@@ -17,6 +18,7 @@ class App extends Component {
     day: null,
     food: null,
     loadingFood: false,
+    ingredientsModalOpen: false,
   }
   openFoodModal = ({meal, day}) => {
     this.setState(() => ({
@@ -33,6 +35,21 @@ class App extends Component {
       food: null,
     }))
   }
+  openIngredientsModal = () => this.setState(() => ({ ingredientsModalOpen: true }))
+  closeIngredientsModal = () => this.setState(() => ({ ingredientsModalOpen: false }))
+  generateShoppingList = () => {
+    return this.props.calendar.reduce((result, { meals }) => {
+      const { breakfast, lunch, dinner } = meals
+       breakfast && result.push(breakfast)
+      lunch && result.push(lunch)
+      dinner && result.push(dinner)
+       return result
+    }, [])
+    .reduce((ings, { ingredientLines }) => { 
+      return ings.concat(ingredientLines)
+    }, [])
+  }
+
   searchFood = (e) => {
     if(!this.input.value) {
       return
@@ -49,14 +66,21 @@ class App extends Component {
   }
 
   render() {
-    const { foodModalOpen, loadingFood, food } = this.state;
+    const { foodModalOpen, loadingFood, food, ingredientsModalOpen } = this.state;
     const { calendar, remove, selectRecipe } = this.props
     const mealOrder = ['breakfast', 'lunch', 'dinner']
-     
 
-        
     return (
       <div className='container'>
+
+       <div className='nav'>
+          <h1 className='header'>UdaciMeals</h1>
+          <button
+            className='shopping-list'
+            onClick={this.openIngredientsModal}>
+              Shopping List
+          </button>
+        </div>
 
         <ul className='meal-types'>
           {mealOrder.map((mealType) => (
@@ -77,13 +101,6 @@ class App extends Component {
               <ul key={day}>
                 {mealOrder.map((meal) => (
                   <li key={meal} className="meal">
-                    {console.log("MEAL")}
-                    {console.log(meal)}
-                    {console.log("MEALS")}
-                    {console.log( meals)}
-                    {console.log("MEAL[meal]")}
-                    {console.log(meals[meal])}
-                
                     {meals[meal]
                     ? <div className="food-item">
                         <img src={meals[meal].image} alt={meals[meal].label} />
@@ -138,6 +155,16 @@ class App extends Component {
                 </div>}
           </div>
         </Modal>
+
+         <Modal
+          className='modal'
+          overlayClassName='overlay'
+          isOpen={ingredientsModalOpen}
+          onRequestClose={this.closeIngredientsModal}
+          contentLabel='Modal'
+        >
+          {ingredientsModalOpen && <ShoppingList list={this.generateShoppingList()}/>}
+        </Modal>
     </div>
     )
   }
@@ -156,7 +183,6 @@ function mapStateToProps({calendar, food}) {
       day,
       meals: Object.keys(calendar[day]).reduce((meals, meal) => {
         meals[meal] = calendar[day][meal] ? food[calendar[day][meal]] : null
-
         return meals
       }, {})
     }))

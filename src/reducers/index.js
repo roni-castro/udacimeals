@@ -67,8 +67,6 @@ const initialCalendarState = {
     switch(action.type) {
       case ADD_RECIPE:
         const {recipe} = action 
-        console.log("ADD_RECIPE")
-        console.log(action)
         return {
           ...state,
           [recipe.label]: recipe
